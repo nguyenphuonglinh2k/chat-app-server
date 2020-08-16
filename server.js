@@ -52,14 +52,7 @@ io.on("connection", function(socket) {
       console.log('Saved successfully');
     });
 
-    // messages = await Message.find({channelId});
-
-    // console.log(messages);
-
-    // if (!messages.length)
-      return io.sockets.emit("message-res", [...messages, newMessage]);
-
-    // return io.sockets.emit("message-res", messages);
+    return io.sockets.emit("message-res", [...messages, newMessage]);
   });
 });
 

@@ -75,7 +75,7 @@ module.exports.forgotPassword = async (req, res) => {
     if ( !(/([a-zA-Z0-9]+@gmail.com)/g.test(email)) )
         return res.json({email: true, emailMessage: 'This field is invalid'});
 
-    let user = await User.findOne({ email: email });
+    let user = await User.findOne({ email }); 
     
     if (!user) 
         return res.json({ email: true, emailMessage: 'Email is not exist' });
@@ -127,4 +127,19 @@ module.exports.resetPassword = async (req, res) => {
         })
         .catch(err => console.log(err));
     });
+}
+
+module.exports.editProfile = async (req, res) => {
+    const { userId } = req.params;
+    const { username, userImageUrl } = req.body;
+
+    if (username.trim() === '')
+        return res.json({error: 'Username is invalid'});
+
+    User.findByIdAndUpdate({ _id: userId }, { username, userImageUrl })
+        .then(result => {
+            console.log('edit profile successfully')
+            res.json({ message: 'Edit profile succesfully'});
+        })
+        .catch(err => res.json({ error: 'Edit profile is failed'}));
 }

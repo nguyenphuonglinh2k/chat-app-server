@@ -16,23 +16,8 @@ let messageSchema = new mongoose.Schema({
         required: true
     },
     user: {
-        _id: {
-            type: ObjectId,
-            required: true
-        },
-        username: {
-            type: String,
-            required: true
-        },
-        email: {
-            type: String,
-            required: true
-        },
-        password: String,
-        userImageUrl: {
-            type: String,
-            required: true
-        }
+        type: ObjectId,
+        ref: "User"
     }
 });
 

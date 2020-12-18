@@ -1,10 +1,21 @@
 const Channel = require('../models/channel.model');
 const Message = require('../models/message.model');
+const User = require('../models/user.model');
 
 module.exports.getAllChannels = async (req, res) => {
     const channels = await Channel.find();
     res.json(channels);
 };
+
+module.exports.getMessages = async (req, res) => {
+    const { channelId } = req.params;
+
+    let messages = await Message
+                    .find({ channelId })
+                    .populate("user", "_id username email userImageUrl"); 
+
+    res.json({ channelId, messages });
+}
 
 module.exports.postCreateChannel = async (req, res) => {
     const { channelName } = req.body;
@@ -29,12 +40,4 @@ module.exports.postCreateChannel = async (req, res) => {
         console.log('Saved successfully');
         return res.json({ message: 'Create channel successfully', newChannel });
     });
-}
-
-module.exports.getMessages = async (req, res) => {
-    const { channelId } = req.params;
-
-    const messages = await Message.find({ channelId });
-
-    res.json({ channelId, messages });
 }

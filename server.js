@@ -1,3 +1,4 @@
+const port = process.env.PORT || 5000 
 const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -8,13 +9,12 @@ const chatRoute = require('./routes/chat.route');
 const Message = require('./models/message.model');
 
 const app = express()
-const port = 5000
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
 //connect mongoDB
 mongoose.connect('mongodb+srv://Linhkeo:PkCKifOarK85NHqy@cluster0.femwd.mongodb.net/tiko-realtime', 
-    {useNewUrlParser: true, useUnifiedTopology: true}
+    {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}
 );
 mongoose.connection.on('connected', () => {
         console.log('connected to mongo yeahh!');
@@ -23,6 +23,11 @@ mongoose.connection.on('error', (err) => {
     console.log('error connecting:', err);
 });
 
+//cors
+app.use(cors())
+app.use(bodyParser.json()) 
+app.use(bodyParser.urlencoded({ extended: true })) 
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
@@ -30,17 +35,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(bodyParser.json()) // for parsing application/json
-app.use(cors())
-app.use(bodyParser.urlencoded({ extended: true })) 
-
+//socket
 io.on("connection", function(socket) {
-  socket.on("send-message", async function({mess, time, channelId, user}) {
+  socket.on("send-message", async function({content, time, channelId, user}) {
     let newMessage = new Message({
-      content: mess,
+      content,
       channelId,
       time,
-      user: JSON.parse(user)
+      user
     });
 
     let messages = await Message.find({channelId});
@@ -52,10 +54,13 @@ io.on("connection", function(socket) {
       console.log('Saved successfully');
     });
 
-    return io.sockets.emit("message-res", [...messages, newMessage]);
+    // sending to all clients except sender
+    return socket.broadcast.emit("message-res", [...messages, newMessage]);
+    // return io.sockets.emit("message-res", [...messages, newMessage]);
   });
 });
 
+//routes
 app.use('/account', accountRoute);
 app.use('/chat', chatRoute);
 

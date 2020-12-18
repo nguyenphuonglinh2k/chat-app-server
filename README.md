@@ -4,6 +4,7 @@ A few features in this app:
 <ol>
 <li>Sign in, sign up, reset password with your email</li>
 <li>Send message</li>
+<li>Edit user's profile</li>
 <li>Create channel to start conversations</li>
 </ol>
 

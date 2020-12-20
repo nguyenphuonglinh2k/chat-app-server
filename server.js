@@ -42,10 +42,8 @@ io.on("connection", function(socket) {
       content,
       channelId,
       time,
-      user
+      user: user._id
     });
-
-    let messages = await Message.find({channelId});
 
     newMessage.save((err, newMessage) => {
       if (err) {
@@ -54,8 +52,12 @@ io.on("connection", function(socket) {
       console.log('Saved successfully');
     });
 
+    let messages = await Message
+                    .find({ channelId })
+                    .populate("user", "_id username email userImageUrl"); 
+
     // sending to all clients except sender
-    return socket.broadcast.emit("message-res", [...messages, newMessage]);
+    return socket.broadcast.emit("message-res", [...messages]);
     // return io.sockets.emit("message-res", [...messages, newMessage]);
   });
 });

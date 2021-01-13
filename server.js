@@ -37,9 +37,10 @@ app.use((req, res, next) => {
 
 //socket
 io.on("connection", function(socket) {
-  socket.on("send-message", async function({content, time, channelId, user}) {
+  socket.on("send-message", async function({content, upload, time, channelId, user}) {
     let newMessage = new Message({
       content,
+      upload,
       channelId,
       time,
       user: user._id
@@ -57,8 +58,8 @@ io.on("connection", function(socket) {
                     .populate("user", "_id username email userImageUrl"); 
 
     // sending to all clients except sender
-    return socket.broadcast.emit("message-res", [...messages]);
-    // return io.sockets.emit("message-res", [...messages, newMessage]);
+    return socket.broadcast.emit("message-res", messages);
+    //return io.sockets.emit("message-res", messages);
   });
 });
 
@@ -69,4 +70,7 @@ app.use('/chat', chatRoute);
 http.listen(port, function() {
   console.log("Listening on *:" + port);
 })
+    
+  
+
 

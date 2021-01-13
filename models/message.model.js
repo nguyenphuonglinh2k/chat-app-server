@@ -4,8 +4,10 @@ const {ObjectId} = mongoose.Schema.Types;
 
 let messageSchema = new mongoose.Schema({
     content: {
-        type: String,
-        required: true
+        type: String
+    },
+    upload: {
+        type: String
     },
     channelId: {
         type: ObjectId,

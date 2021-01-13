@@ -4,6 +4,7 @@ var smtpTransport = require('nodemailer-smtp-transport');
 var jwt = require('jsonwebtoken');
 
 const User = require('../models/user.model');
+const Channel = require('../models/channel.model');
 
 module.exports.postSignUp = async (req, res) => {
     const { username, email, password } = req.body;
@@ -18,6 +19,8 @@ module.exports.postSignUp = async (req, res) => {
         return res.json({password: true});
 
     const user = await User.findOne({ email: email });
+    const channelsobj = await Channel.find({ channelType: "public" }).select("_id");
+    const channelList = channelsobj.map(channel => channel._id);
 
     if (user) 
         return res.json({ error: 'Email already exists'});
@@ -29,7 +32,8 @@ module.exports.postSignUp = async (req, res) => {
             username,
             email,
             password: hash,
-            userImageUrl: 'http://skote-v-light.react.themesbrand.com/static/media/avatar-1.67e2b9d7.jpg'
+            userImageUrl: 'https://res.cloudinary.com/coders-tokyo/image/upload/v1608599766/ro7ag7gldaj6oikmogho.jpg',
+            channelList
         });
 
         user.save((err, user) => {
@@ -46,11 +50,11 @@ module.exports.postSignUp = async (req, res) => {
 
 module.exports.postSignin = async (req, res) => {
     const { email, password } = req.body;
-
+    console.time('someFunction')
     if ( !(/([a-zA-Z0-9]+@gmail.com)/g.test(email)) )
         return res.json({email: true, emailMessage: 'This field is invalid'});
-
-    let user = await User.findOne({ email: email});
+    
+    let user = await User.findOne({ email }); 
     
     if (!user) 
         return res.json({ email: true, emailMessage: 'Email is not exist' });
@@ -63,9 +67,13 @@ module.exports.postSignin = async (req, res) => {
             user: user
         }, 'secret_key_jwt', { expiresIn: '24h' });
 
-        const { _id, email, username, userImageUrl } = user;
+        const { _id, email, username, userImageUrl, channelList } = user;
 
-        return res.json({message: 'login successfully', token, user: { _id, email, username, userImageUrl } });
+        return res.json({
+            message: 'login successfully', 
+            token, 
+            user: { _id, email, username, userImageUrl, channelList } 
+        });
     });    
 };
 
@@ -109,8 +117,6 @@ module.exports.forgotPassword = async (req, res) => {
 module.exports.resetPassword = async (req, res) => {
     const { password } = req.body;
     const { userId } = req.params;
-
-    console.log(userId);
 
     if (password.length < 4)
         return res.json({password: true});

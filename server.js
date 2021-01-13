@@ -59,7 +59,7 @@ io.on("connection", function(socket) {
 
     // sending to all clients except sender
     return socket.broadcast.emit("message-res", messages);
-    // return io.sockets.emit("message-res", messages);
+    //return io.sockets.emit("message-res", messages);
   });
 });
 
@@ -70,4 +70,7 @@ app.use('/chat', chatRoute);
 http.listen(port, function() {
   console.log("Listening on *:" + port);
 })
+    
+  
+
 

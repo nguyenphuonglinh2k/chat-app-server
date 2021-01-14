@@ -1,3 +1,6 @@
+var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
+
 const Channel = require('../models/channel.model');
 const Message = require('../models/message.model');
 const User = require('../models/user.model');
@@ -57,7 +60,11 @@ module.exports.postCreateChannel = async (req, res) => {
 module.exports.postDeleteChannel = async (req, res) => {
     const { channelId } = req.params;
 
-    await Channel.deleteOne({ _id: channelId}).then(res => console.log(res));
+    await Channel.findByIdAndDelete({ _id: channelId})
+        .then(result => 
+            res.json({message: 'Delete channel successfully'})
+        )
+        .catch(err => console.log(err));
 
     await Message.deleteMany({ channelId: channelId}); 
 }
@@ -78,9 +85,32 @@ module.exports.postAddUserToChannel = async (req, res) => {
         $addToSet: {userList: user._id}
     }, {
         new: true
-    }).then(result => 
+    }).then(result => {
         res.json({message: 'Add user successfully'})
-    )
+        var transporter = nodemailer.createTransport(smtpTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            auth: {
+                user: 'nguyenphuonglinh11102000@gmail.com',
+                pass: 'ykmdjujgkrkqcuct'
+            }
+        }));
+    
+        var mailOptions = {
+            from: 'nguyenphuonglinh11102000@gmail.com',
+            to: email,
+            subject: 'Notification: Add to channel',
+            text: `You is added into ${result.channelName}`
+        };
+    
+        transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
+    })
     .catch(err => console.log(err));
 }
 

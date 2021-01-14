@@ -19,8 +19,6 @@ module.exports.postSignUp = async (req, res) => {
         return res.json({password: true});
 
     const user = await User.findOne({ email: email });
-    const channelsobj = await Channel.find({ channelType: "public" }).select("_id");
-    const channelList = channelsobj.map(channel => channel._id);
 
     if (user) 
         return res.json({ error: 'Email already exists'});
@@ -33,13 +31,19 @@ module.exports.postSignUp = async (req, res) => {
             email,
             password: hash,
             userImageUrl: 'https://res.cloudinary.com/coders-tokyo/image/upload/v1608599766/ro7ag7gldaj6oikmogho.jpg',
-            channelList
         });
 
-        user.save((err, user) => {
+        user.save(async (err, user) => {
             if (err) {
                 console.log(err);
             }
+
+            await Channel.updateMany({channelType: "public"}, {
+                $addToSet: {userList: user._id}
+            }).then(result => 
+                console.log("push userId into channel successfully")
+            )
+            .catch(error => console.log(error));
 
             console.log('Saved successfully');
             return res.json({ message: 'Register user successfully' });
